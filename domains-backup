@@ -12,7 +12,7 @@ MONTHLY_TO_KEEP="6"
 # General Dir and Backup Configuration
 BACKUP_NAME="all-domains-backups"
 
-SAVE_DIR="/root/$BACKUP_NAME"
+SAVE_DIR="/root/$BACKUP_NAME/"
 
 # Drop trailing slash on dirs
 TO_EXCLUDE="
@@ -31,6 +31,22 @@ $HOLLAND_LOCATION
 /var/www/vhosts/domain4
 /var/www/vhosts/domain5
 "
+
+
+# Creating backup dirs
+if [ ! -d "$SAVE_DIR" ]; then
+    mkdir "$SAVE_DIR"
+fi
+if [ ! -d "$SAVE_DIR""/daily" ]; then
+    mkdir "$SAVE_DIR""/daily"
+fi
+if [ ! -d "$SAVE_DIR""/weekly" ]; then
+    mkdir "$SAVE_DIR""/weekly"
+fi
+if [ ! -d "$SAVE_DIR""/monthly" ]; then
+    mkdir "$SAVE_DIR""/monthly"
+fi
+
 
 
 

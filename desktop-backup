@@ -28,6 +28,21 @@ TO_BACKUP="
 "
 
 
+if [ ! -d "$SAVE_DIR" ]; then
+    mkdir "$SAVE_DIR"
+fi
+if [ ! -d "$SAVE_DIR""/daily" ]; then
+    mkdir "$SAVE_DIR""/daily"
+fi
+if [ ! -d "$SAVE_DIR""/weekly" ]; then
+    mkdir "$SAVE_DIR""/weekly"
+fi
+if [ ! -d "$SAVE_DIR""/monthly" ]; then
+    mkdir "$SAVE_DIR""/monthly"
+fi
+
+
+
 
 EXCLUDES_AND_BACKUPS="$TO_EXCLUDE $TO_BACKUP"
 
