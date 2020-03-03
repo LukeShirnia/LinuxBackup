@@ -1,0 +1,70 @@
+#!/bin/bash
+
+RSYNC="YES"
+
+# Rotation of backups (in days)
+DAILY_TO_KEEP="12"
+WEEKLY_TO_KEEP="6"
+MONTHLY_TO_KEEP="6"
+
+# General Dir and Backup Configuration
+BACKUP_NAME="work-backups"
+
+SAVE_DIR="/root/$BACKUP_NAME"
+
+# Drop trailing slash on dirs
+TO_EXCLUDE="
+--exclude-caches-all
+--exclude-vcs
+--exclude=Cache
+--exclude=Slack
+--exclude='venv'
+"
+
+TO_BACKUP="
+/home/user
+/home/ansible/
+/etc/ansible/
+"
+
+
+
+EXCLUDES_AND_BACKUPS="$TO_EXCLUDE $TO_BACKUP"
+
+# Checking if backup instance is daily, monthly or weekly
+case "$1" in
+"weekly")
+    BACKUP_RUN="weekly/"
+;;
+"monthly")
+    BACKUP_RUN="monthly/"
+;;
+*)
+    BACKUP_RUN="daily/" # Default backup run is daily
+;;
+esac
+
+TIME_STAMP=$(date +"%Y-%m-%d-%T")
+
+BACKUP_SAVE_PATH="$SAVE_DIR""$BACKUP_RUN""$BACKUP_NAME"."$TIME_STAMP".tar.gz
+
+######## Backup Run ########
+# tar'ing files and databases
+tar -cvzf $BACKUP_SAVE_PATH $EXCLUDES_AND_BACKUPS
+
+# Encrypting Backup
+gpg --yes --batch --passphrase=`cat /root/.backup_pass` -c "$BACKUP_SAVE_PATH"
+
+# Removing unencrypted version
+rm -f "$BACKUP_SAVE_PATH"
+
+# Clearing old backups
+find "$SAVE_DIR"daily/ -type f -mtime +"$DAILY_TO_KEEP" -name "*.tar.gz.gpg" -exec rm {} \;
+find "$SAVE_DIR"weekly/ -type f -mtime +"$WEEKLY_TO_KEEP" -name "*.tar.gz.gpg" -exec rm {} \;
+find "$SAVE_DIR"monthly/ -type f -mtime +"$MONTHLY_TO_KEEP" -name "*.tar.gz.gpg" -exec rm {} \;
+
+
+if [[ "$RSYNC" == "YES" ]]; then
+    # Rsync'ing to remote device
+    /usr/bin/rsync -vzhr --delete -e "ssh -p 666"  $SAVE_DIR example@example.com:/home/example/work-backup
+fi
